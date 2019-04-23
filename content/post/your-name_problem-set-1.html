@@ -1,0 +1,259 @@
+---
+title: "Problem set 1"
+author: "Minglan YE"
+date: "02/03/2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+
+<div id="details" class="section level1">
+<h1>Details</h1>
+<ul>
+<li>Who did you collaborate with: Bala</li>
+<li>Approximately how much time did you spend on this problem set: 4 hours</li>
+<li>What, if anything, gave you the most trouble:</li>
+</ul>
+</div>
+<div id="task-1" class="section level1">
+<h1>Task 1</h1>
+<p>Yes, I have watched the short videos you mentioned on the Task 1.</p>
+</div>
+<div id="task-2" class="section level1">
+<h1>Task 2</h1>
+<div id="life-expectancy-in-2007" class="section level2">
+<h2>Life expectancy in 2007</h2>
+<pre class="r"><code># Notice the warning=FALSE and message=FALSE in the chunk options. R spits out 
+# a lot of messages when you load tidyverse and we don&#39;t want those in the 
+# final document.
+
+library(tidyverse) 
+# This loads ggplot2, dplyr, and other packages you&#39;ll need
+library(gapminder)  # This loads the gapminder data</code></pre>
+<p>Let’s first look at the first few rows of data:</p>
+<pre class="r"><code>head(gapminder)</code></pre>
+<pre><code>## # A tibble: 6 x 6
+##   country     continent  year lifeExp      pop gdpPercap
+##   &lt;fct&gt;       &lt;fct&gt;     &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
+## 1 Afghanistan Asia       1952    28.8  8425333      779.
+## 2 Afghanistan Asia       1957    30.3  9240934      821.
+## 3 Afghanistan Asia       1962    32.0 10267083      853.
+## 4 Afghanistan Asia       1967    34.0 11537966      836.
+## 5 Afghanistan Asia       1972    36.1 13079460      740.
+## 6 Afghanistan Asia       1977    38.4 14880372      786.</code></pre>
+<p>Right now, the <code>gapminder</code> data frame contains rows for all years for all countries. We want to only look at 2007, so we create a new data frame that filters only rows for 2007.</p>
+<p>Note how there’s a weird sequence of characters: <code>%&gt;%</code>. This is called a <em>pipe</em> and lets you chain functions together. We could have also written this as <code>gapminder_2007 &lt;- filter(gapminder, year == 2007)</code>.</p>
+<pre class="r"><code>gapminder_2007 &lt;- gapminder %&gt;%
+  filter(year == 2007)
+
+head(gapminder_2007)</code></pre>
+<pre><code>## # A tibble: 6 x 6
+##   country     continent  year lifeExp      pop gdpPercap
+##   &lt;fct&gt;       &lt;fct&gt;     &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
+## 1 Afghanistan Asia       2007    43.8 31889923      975.
+## 2 Albania     Europe     2007    76.4  3600523     5937.
+## 3 Algeria     Africa     2007    72.3 33333216     6223.
+## 4 Angola      Africa     2007    42.7 12420476     4797.
+## 5 Argentina   Americas   2007    75.3 40301927    12779.
+## 6 Australia   Oceania    2007    81.2 20434176    34435.</code></pre>
+<p>Now we can plot a histogram of 2007 life expectancies with the default settings:</p>
+<pre class="r"><code>ggplot(data = gapminder_2007, 
+       mapping = aes(x = lifeExp)) +
+  geom_histogram()</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/plot-2007-1-1.png" width="672" /></p>
+<p>R will use 30 histogram bins by default, but that’s not always appropriate, and it will yell at you for doing so. <strong>Adjust the number of bins to 2, then 40, then 100.</strong> <strong>What’s a good number for this data? Why?</strong></p>
+<p>TYPE YOUR ANSWER HERE.</p>
+<p>I thinke the best number of bins should be 40 since X-axis is showing the age of life.</p>
+<pre class="r"><code>ggplot(data = gapminder_2007, 
+       mapping = aes(x = lifeExp)) +
+  geom_histogram(bins = 100)</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/plot-2007-2-1.png" width="672" /></p>
+</div>
+<div id="average-life-expectancy-in-2007-by-continent" class="section level2">
+<h2>Average life expectancy in 2007 by continent</h2>
+<p>We’re also interested in the differences of life expectancy across continents. First, we can group all rows by continent and calculate the mean</p>
+<p>This is where the <code>%&gt;%</code> function is actually super useful. Remember that it lets you chain functions together—this means we can read these commands as a set of instructions: take the <code>gapminder</code> data frame, filter it, group it by continent, and summarize each group by calculating the mean. Without using the <code>%&gt;%</code>, we could write this same chain like this: <code>summarize(group_by(filter(gapminder, year == 2007), continent), avg_life_exp = mean(lifeExp))</code>. But that’s <em>awful</em> and impossible to read and full of parentheses that can easily be mismatched.</p>
+<pre class="r"><code>gapminder_cont_2007 &lt;- gapminder %&gt;%
+  filter(year == 2007) %&gt;% 
+  group_by(continent) %&gt;%
+  summarize(avg_life_exp = mean(lifeExp))
+
+head(gapminder_cont_2007)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   continent avg_life_exp
+##   &lt;fct&gt;            &lt;dbl&gt;
+## 1 Africa            54.8
+## 2 Americas          73.6
+## 3 Asia              70.7
+## 4 Europe            77.6
+## 5 Oceania           80.7</code></pre>
+<p>Let’s plot these averages as a bar chart:</p>
+<pre class="r"><code>ggplot(data = gapminder_cont_2007, 
+       mapping = aes(x = continent, y = avg_life_exp, fill = continent)) + 
+  geom_col()</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/plot-2007-bar-1.png" width="672" /></p>
+<p>Then, let’s plot them as density distributions. We don’t need to use the summarized data frame for this, just the original filtered <code>gapminder_2007</code> data frame:</p>
+<pre class="r"><code>ggplot(data = gapminder_2007, 
+       mapping = aes(x = lifeExp, fill = continent)) + 
+  geom_density()</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/plot-2007-density-1.png" width="672" /></p>
+<p>Now let’s plot life expectancies as violin charts. These are the density distributions turned sideways:</p>
+<pre class="r"><code>ggplot(data = gapminder_2007, 
+       mapping = aes(x = continent, y = lifeExp, fill = continent)) + 
+  geom_violin()</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/plot-2007-violin-1.png" width="672" /></p>
+<p>Finally, we can add actual points of data for each country to the violin chart:</p>
+<pre class="r"><code>ggplot(data = gapminder_2007, 
+       mapping = aes(x = continent, y = lifeExp, fill = continent)) + 
+  geom_violin() +
+  geom_point()</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/plot-2007-violin-points-1.png" width="672" /></p>
+<p>The bar chart, density plot, violin plot, and violin plot + points each show different ways of looking at a single number—the average life expectancy in each continent. <strong>Answer these questions:</strong></p>
+<ul>
+<li><p>Which plot is most helpful? TYPE YOUR ANSWER HERE. I think the violin plot with points are most helpful one by helping me to visualize the spread of lifeExp and common age for lifeexp for each continets.</p></li>
+<li><p>Which ones show variability? TYPE YOUR ANSWER HERE. I think the violin with point show more variablities.</p></li>
+<li><p>What’s going on with Oceania? TYPE YOUR ANSWER HERE. Oceania has the longest lifeexp.</p></li>
+</ul>
+</div>
+</div>
+<div id="task-3-r-and-ggplot" class="section level1">
+<h1>Task 3: R and ggplot</h1>
+<pre class="r"><code># Technically you don&#39;t need to run this because we loaded tidyverse earlier in Task 2
+library(tidyverse)</code></pre>
+<div id="section" class="section level2">
+<h2>3.2.4</h2>
+<p><strong>1: Run <code>ggplot(data = mpg)</code>. What do you see?</strong></p>
+<pre class="r"><code>ggplot(data = mpg)</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/blank-plot-1.png" width="192" /></p>
+<p>TYPE YOUR ANSWER HERE. (hint: I gave you the answer in the chunk name)</p>
+<p>blank plot. ggplot(data=mpg) is the dataset to use in the grpah.</p>
+<p>(Notice how I used <code>fig.width</code> and <code>fig.height</code> in the chunk options. You can click on the little gear icon in the far left of the chunk to change other options.)</p>
+<p><strong>2: How many rows are in <code>mpg</code>? How many columns?</strong></p>
+<p>A data frame with 234 rows and 11 variables.</p>
+<pre class="r"><code>nrow(mpg)</code></pre>
+<pre><code>## [1] 234</code></pre>
+<pre class="r"><code>ncol(mpg)</code></pre>
+<pre><code>## [1] 11</code></pre>
+<pre class="r"><code># Or
+dim(mpg)</code></pre>
+<pre><code>## [1] 234  11</code></pre>
+<pre class="r"><code># Or
+mpg</code></pre>
+<pre><code>## # A tibble: 234 x 11
+##    manufacturer model displ  year   cyl trans drv     cty   hwy fl    class
+##    &lt;chr&gt;        &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+##  1 audi         a4      1.8  1999     4 auto~ f        18    29 p     comp~
+##  2 audi         a4      1.8  1999     4 manu~ f        21    29 p     comp~
+##  3 audi         a4      2    2008     4 manu~ f        20    31 p     comp~
+##  4 audi         a4      2    2008     4 auto~ f        21    30 p     comp~
+##  5 audi         a4      2.8  1999     6 auto~ f        16    26 p     comp~
+##  6 audi         a4      2.8  1999     6 manu~ f        18    26 p     comp~
+##  7 audi         a4      3.1  2008     6 auto~ f        18    27 p     comp~
+##  8 audi         a4 q~   1.8  1999     4 manu~ 4        18    26 p     comp~
+##  9 audi         a4 q~   1.8  1999     4 auto~ 4        16    25 p     comp~
+## 10 audi         a4 q~   2    2008     4 manu~ 4        20    28 p     comp~
+## # ... with 224 more rows</code></pre>
+<p><strong>3: What does the <code>drv</code> variable describe? Read the help for <code>?mpg</code> to find out.</strong></p>
+<p>f= front-wheel drive, r = rear wheel drive, 4 = 4wd</p>
+<p><strong>4: Make a scatterplot of <code>hwy</code> vs <code>cyl</code>.</strong></p>
+<pre class="r"><code>ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = hwy, y = cyl))</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/hwy-cyl-scatterplot-1.png" width="672" /></p>
+<p><strong>5: What happens if you make a scatterplot of <code>class</code> vs <code>drv</code>? Why is the plot not useful?</strong></p>
+<pre class="r"><code>ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = class, y = drv), position = &#39;jitter&#39;)</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/class-drv-scatterplot-1.png" width="672" /></p>
+<p>the plot will not be helpful because not all the data are shown in the graph due to overlapping. Adding jitter to show that the overlapping problem.</p>
+</div>
+<div id="section-1" class="section level2">
+<h2>3.3.1</h2>
+<p>Q1 we need to put the color on the outside to apply for geom_point.</p>
+<pre class="r"><code>ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy),color = &quot;blue&quot;)</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/displ-hwy-scatterplot-blue-1.png" width="672" /></p>
+<p>Q2 run the data frame in the mgp then under each column it will show <CHR> means catergorical variables. <dbl> and <int> menas continous variable. (Also can find in the 3.2.1 The mpg Dataframe.)</p>
+<pre class="r"><code>ggplot2::mpg</code></pre>
+<pre><code>## # A tibble: 234 x 11
+##    manufacturer model displ  year   cyl trans drv     cty   hwy fl    class
+##    &lt;chr&gt;        &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
+##  1 audi         a4      1.8  1999     4 auto~ f        18    29 p     comp~
+##  2 audi         a4      1.8  1999     4 manu~ f        21    29 p     comp~
+##  3 audi         a4      2    2008     4 manu~ f        20    31 p     comp~
+##  4 audi         a4      2    2008     4 auto~ f        21    30 p     comp~
+##  5 audi         a4      2.8  1999     6 auto~ f        16    26 p     comp~
+##  6 audi         a4      2.8  1999     6 manu~ f        18    26 p     comp~
+##  7 audi         a4      3.1  2008     6 auto~ f        18    27 p     comp~
+##  8 audi         a4 q~   1.8  1999     4 manu~ 4        18    26 p     comp~
+##  9 audi         a4 q~   1.8  1999     4 auto~ 4        16    25 p     comp~
+## 10 audi         a4 q~   2    2008     4 manu~ 4        20    28 p     comp~
+## # ... with 224 more rows</code></pre>
+<p>Q3</p>
+<pre class="r"><code>ggplot(data=mpg) + 
+    geom_point(mapping = aes(x=displ, y=hwy, color=cty))</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/ggplot%20color-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data=mpg) + 
+    geom_point(mapping = aes(x=displ, y=hwy, size=cty))</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/ggplot%20size-1.png" width="672" /></p>
+<pre class="ggplot"><code>ggplot(data=mpg) + 
+    geom_point(mapping = aes(x=displ, y=hwy, shape=cty))</code></pre>
+<p>we cant run shape on a continous variables. we can only run shape into catogorical variables and only 6 different catogorical can be catogorized.</p>
+<p>Q4</p>
+<p>It will show both size and color on the graph and create two different legends.</p>
+<pre class="r"><code>ggplot(data=mpg)+
+  geom_point(mapping = aes(x=displ, y=hwy, color=cty, size=cty))</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/multiple%20aesthetics-1.png" width="672" /></p>
+<p>Q5 Stroke is used for modify the width of the boarder.</p>
+<pre class="r"><code>?geom_point</code></pre>
+<pre><code>## starting httpd help server ... done</code></pre>
+</div>
+<div id="section-2" class="section level2">
+<h2>3.5.1</h2>
+<pre class="q1"><code>What happens if you facet on a continuous variable?
+
+R will produce each graph for each variable. no comparsion between the variables which not presenting anything to the viewers. If there are tons of variables, there will be tons of graph. It&#39;s too much graph for viewer to see at one time. </code></pre>
+<p>Q2</p>
+<pre class="r"><code>ggplot(data=mpg)+
+  geom_point(mapping=aes(x=drv,y=cyl))</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/Q2-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data=mpg)+
+  geom_point(mapping=aes(x=drv,y=cyl)) +
+  facet_grid(drv~cyl)</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/Q2%20with%20facet_grid-1.png" width="672" /></p>
+<p>I think the empty cell means there is no data in the mpg.</p>
+<p>Q3</p>
+<p>. means not facet in the rows or columns dimension.</p>
+<p>Q4</p>
+<p>If we use color, there will be too many dots in the graph and will be hard for viewer to visualize the data. By spliting the data into individual graph, helps better visualization. But facet the data into dividual grpahy makes harder to compare the overall relationship with other variables.</p>
+</div>
+<div id="section-3" class="section level2">
+<h2>3.6.1</h2>
+<p>Q1 What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?</p>
+<p>line - geom_line() boxplot - geom_boxplot() histogram - geom_histogram() area chart - geom_area()</p>
+<p>Q2</p>
+<pre class="r"><code>ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Q3 show.legend=false will removes the legend. if remove the legend, it will be hard for viewer to know what color represent what data.</p>
+<pre class="r"><code>ggplot(data = mpg) +
+  geom_smooth(
+    mapping = aes(x = displ, y = hwy, color = drv),
+    show.legend = FALSE)</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/legend-1.png" width="672" /></p>
+<p>Q4 it determines if there should be draw the confident interval around the line or not.</p>
+<p>Q5 two graphys looks the same. if the mpg data didnt change, the graphy will be the same since same data and same geom settings.</p>
+</div>
+<div id="section-4" class="section level2">
+<h2>3.8.1</h2>
+<p>Q1 If we do it with the geom_point, r will gather the similiar point togehter which will cause overlapping problem.</p>
+<pre class="r"><code>ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_jitter()</code></pre>
+<p><img src="/post/your-name_problem-set-1_files/figure-html/Q1%20improve%20the%20graph-1.png" width="672" /></p>
+<p>Q2 width and height.</p>
+</div>
+</div>
